@@ -1,0 +1,34 @@
+---
+title: "A verifiable paper"
+author:
+  - name: Ada Example
+    affiliations:
+      - name: the Axiom Foundation
+date: 2026-08-14
+date-format: iso
+kicker: working paper
+revision: "1"
+status: |
+  This draft demonstrates a status body with `code` and a
+  [local-font link](https://axiom.org/).
+abstract: |
+  A minimal paper that exercises the title, abstract, status, headings,
+  links, footnotes, and code treatments.
+format:
+  axiom-paper-pdf: default
+  axiom-paper-html: default
+---
+
+# A sentence-case section
+
+The paper body uses Geist Sans and an [accent link](https://axiom.org/).[^1]
+
+## A subsection
+
+Subsections stay sans serif.
+
+```text
+The code block uses JetBrains Mono without a background fill.
+```
+
+[^1]: Footnotes use Geist Sans at the quieter register.

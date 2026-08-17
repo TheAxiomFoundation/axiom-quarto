@@ -1,5 +1,6 @@
 ---
 title: "A verifiable paper"
+subtitle: "An example that exercises every title-block element"
 author:
   - name: Ada Example
     affiliations:

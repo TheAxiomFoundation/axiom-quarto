@@ -3,10 +3,10 @@ title: "A verifiable paper"
 author:
   - name: Ada Example
     affiliations:
-      - name: the Axiom Foundation
+      - name: Axiom Foundation
   - name: Grace Sample
     affiliations:
-      - name: the Axiom Foundation
+      - name: Axiom Foundation
 date: 2026-08-14
 date-format: iso
 kicker: working paper

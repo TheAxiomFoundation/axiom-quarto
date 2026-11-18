@@ -49,10 +49,13 @@ a:focus {
 }
 
 .axiom-wordmark {
+  --axiom-wordmark-height: 3rem;
   display: block;
   width: auto;
-  height: 3rem;
-  margin-bottom: 1.4rem;
+  height: var(--axiom-wordmark-height);
+  /* The kit file pads its first glyph 26.5 of its 363 units from the left
+     edge; the negative margin keeps the glyph flush with the kicker. */
+  margin: 0 0 1.4rem calc(var(--axiom-wordmark-height) * -26.5 / 363);
 }
 
 .axiom-kicker,

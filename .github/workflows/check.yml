@@ -36,6 +36,23 @@ jobs:
 
       - run: scripts/check.sh
 
+      # TEMPORARY: does the base axiom-pdf format render on main? Removed in the
+      # next commit.
+      - name: Probe base axiom-pdf on main
+        if: ${{ !cancelled() && matrix.quarto == '1.11.9' }}
+        run: |
+          git fetch --depth=1 origin main
+          probe="$(mktemp -d)"
+          git archive FETCH_HEAD _extensions _quarto.yml | tar -x -C "$probe"
+          git rev-parse FETCH_HEAD
+          printf -- '---\ntitle: "Base PDF"\nauthor: Ada Example\nformat:\n  axiom-pdf: default\n---\nBody.\n' >"$probe/paper.qmd"
+          if (cd "$probe" && quarto render paper.qmd) >"$probe/render.log" 2>&1; then
+            echo "PROBE: base axiom-pdf renders on main"
+          else
+            echo "PROBE: base axiom-pdf fails on main"
+            grep -E "axiom-font-dir|Error|error" "$probe/render.log" | head -20
+          fi
+
       # Reviewers judge the title block from these images; they are not checks.
       - name: Render the example for review
         if: ${{ !cancelled() && matrix.quarto == '1.11.9' }}

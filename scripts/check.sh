@@ -53,11 +53,13 @@ check "axiom-wordmark.svg is the brand kit's full lockup" \
 # The committed PDF must still be the conversion of the SVG. Rebuild it and
 # rasterize both PDFs with the same pdftoppm, so antialiasing matches and any
 # difference is content. A fresh conversion matches to the pixel, both on
-# macOS and with Ubuntu 24.04's librsvg 2.58. At 2% fuzz, the kit's w300 or
-# ink lockup moves about 5% of pixels, its flat amber lockup 0.8%, shifting
-# one gradient stop by 16 per channel 0.5%, and dropping FOUNDATION's F 0.17%,
-# so the bar is 0.1%. Each step fails closed: this runs under `if`, where
-# `set -e` is off.
+# macOS and with Ubuntu 24.04's librsvg 2.58. On that runner (ImageMagick 6,
+# Actions run 44377570542), 2% fuzz counts 0.28% of pixels as changed when
+# FOUNDATION's F is dropped, 13% when one gradient stop shifts by 16 per
+# channel, and 17% to 22% for the kit's flat amber and ink lockups; its w300
+# and w400 lockups change the page size, which fails first. ImageMagick 7
+# counts fewer (0.17% for the dropped F), so the bar is 0.1%. Each step fails
+# closed: this runs under `if`, where `set -e` is off.
 pdf_matches_svg() {
   local shipped="$assets/axiom-wordmark.pdf" shipped_size fresh_size
   local width height differing

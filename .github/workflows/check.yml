@@ -40,35 +40,6 @@ jobs:
 
       - run: scripts/check.sh
 
-      # TEMPORARY: measure the drift check's sensitivity with this runner's
-      # librsvg, poppler and ImageMagick 6. Removed in the next commit.
-      - name: Measure drift-check sensitivity
-        if: ${{ !cancelled() && matrix.preview }}
-        run: |
-          m="$(mktemp -d)"
-          svg=_extensions/axiom/assets/axiom-wordmark.svg
-          kit=https://raw.githubusercontent.com/TheAxiomFoundation/axiom-brand/8a738e0e5fdcaa4605e8412df7173057bb5d5dbb/svg/wordmark/full
-          compare -version | head -1
-          pdftoppm -singlefile -png -r 96 _extensions/axiom/assets/axiom-wordmark.pdf "$m/shipped"
-          cp "$svg" "$m/same.svg"
-          sed 's/#b45309/#1c1917/; s/#8a3d08/#1c1917/' "$svg" >"$m/ink-stops.svg"
-          sed 's/#8a3d08/#b45309/' "$svg" >"$m/flat-amber.svg"
-          sed 's/#8a3d08/#9a4d18/' "$svg" >"$m/stop-shift.svg"
-          grep -v 'translate(43.53 342.90)' "$svg" >"$m/drop-f.svg"
-          for w in w300 w400; do
-            curl -fsSL "$kit/axiom-full-$w-gradient.svg" -o "$m/$w.svg" || echo "fetch $w failed"
-          done
-          n="$(identify -format '%[fx:w*h]' "$m/shipped.png")"
-          for v in same ink-stops flat-amber stop-shift drop-f w300 w400; do
-            [ -s "$m/$v.svg" ] || continue
-            rsvg-convert --format=pdf --output="$m/$v.pdf" "$m/$v.svg"
-            size="$(pdfinfo "$m/$v.pdf" | sed -n 's/^Page size: *//p')"
-            pdftoppm -singlefile -png -r 96 "$m/$v.pdf" "$m/$v"
-            d="$({ compare -metric AE -fuzz 2% "$m/shipped.png" "$m/$v.png" null: 2>&1 || true; } | awk '{print $1}')"
-            echo "SENSITIVITY $v size=[$size] differing=$d of $n = $(awk -v d="$d" -v n="$n" 'BEGIN{printf "%.3f%%", 100*d/n}')"
-          done
-          rm -rf "$m"
-
       # Reviewers judge the title block from these images; they are not checks.
       - name: Render the example for review
         if: ${{ !cancelled() && matrix.preview }}
@@ -77,7 +48,6 @@ jobs:
           mkdir -p preview
           cp example/paper.pdf preview/paper.pdf
           pdftoppm -f 1 -l 1 -r 150 -png -singlefile example/paper.pdf preview/paper-pdf-page1
-          echo "TEMPORARY: pdftotext finds 'Axiom Foundation' $(pdftotext -f 1 -l 1 example/paper.pdf - | grep -c 'Axiom Foundation') time(s) on page 1"
           for width in 1024 375; do
             google-chrome --headless=new --disable-gpu --hide-scrollbars \
               --window-size="$width,1400" \

@@ -12,8 +12,9 @@
 \makeatletter
 \@ifundefined{KV@Gin@alt}{\define@key{Gin}{alt}{}}{}
 \makeatother
-% The alt key does nothing without PDF tagging, so ActualText gives the
-% wordmark its text equivalent for copying, search and assistive tools.
+% The alt key does nothing without PDF tagging, so an ActualText span around
+% the image carries the wordmark's text for readers that honour it. Poppler's
+% pdftotext does not: it ignores ActualText on a span that holds only an image.
 \usepackage{accsupp}
 
 \setmainfont[

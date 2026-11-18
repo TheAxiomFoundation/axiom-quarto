@@ -10,14 +10,16 @@ author:
       - name: Axiom Foundation
 date: 2026-08-14
 date-format: iso
+# The wordmark heads the title block by default; false omits it.
+wordmark: true
 kicker: working paper
 revision: "1"
 status: |
   This draft demonstrates a status body with `code` and a
   [local-font link](https://axiom.org/).
 abstract: |
-  A minimal paper that exercises the title, abstract, status, headings,
-  links, footnotes, and code treatments.
+  A minimal paper that exercises the wordmark, title, abstract, status,
+  headings, links, footnotes, and code treatments.
 format:
   axiom-paper-pdf: default
   axiom-paper-html: default

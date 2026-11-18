@@ -1,0 +1,59 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: Render (Quarto ${{ matrix.quarto }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # The extensions declare quarto-required >=1.7.0; test that floor and
+        # the stable release current when this was written (2026-11-18).
+        quarto: ["1.7.34", "1.11.9"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install XeLaTeX and image tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            texlive-xetex texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended lmodern \
+            libxml2-utils librsvg2-bin poppler-utils imagemagick
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: ${{ matrix.quarto }}
+
+      - run: scripts/check.sh
+
+      # Reviewers judge the title block from these images; they are not checks.
+      - name: Render the example for review
+        if: ${{ !cancelled() && matrix.quarto == '1.11.9' }}
+        run: |
+          quarto render example/paper.qmd
+          mkdir -p preview
+          cp example/paper.pdf preview/paper.pdf
+          pdftoppm -f 1 -l 1 -r 150 -png -singlefile example/paper.pdf preview/paper-pdf-page1
+          for width in 1024 375; do
+            google-chrome --headless=new --disable-gpu --hide-scrollbars \
+              --window-size="$width,1400" \
+              --screenshot="$PWD/preview/paper-html-$width.png" \
+              "file://$PWD/example/paper.html"
+          done
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && matrix.quarto == '1.11.9' }}
+        with:
+          name: preview
+          path: preview/
+          if-no-files-found: error

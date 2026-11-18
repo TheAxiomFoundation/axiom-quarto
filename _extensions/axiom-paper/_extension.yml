@@ -1,11 +1,13 @@
 title: Axiom paper
 author: the Axiom Foundation
-version: 1.0.0
+version: 1.1.0
 quarto-required: ">=1.7.0"
 contributes:
   formats:
     common:
       number-sections: true
+      # The title block shows the theme wordmark; `wordmark: false` omits it.
+      wordmark: true
       metadata-files:
         - ../axiom/theme-axiom.yml
     pdf:
@@ -14,6 +16,7 @@ contributes:
         - margin=1.1in
       format-resources:
         - ../axiom/fonts
+        - ../axiom/assets/axiom-wordmark.pdf
       colorlinks: true
       code-block-border-left: "#e5e7eb"
       code-block-bg: false
@@ -30,5 +33,7 @@ contributes:
         - default
         - ../axiom/axiom.scss
       css: ../axiom/fonts.css
+      format-resources:
+        - ../axiom/assets/axiom-wordmark.svg
       template-partials:
         - ../axiom/partials/title-block.html

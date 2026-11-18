@@ -3,6 +3,10 @@
   \begingroup
   \setlength{\parindent}{0pt}%
   \begin{flushleft}
+    $if(wordmark)$
+    \includegraphics[height=0.45in,alt={$axiom-theme.wordmark-alt$}]{$axiom-theme.wordmark-pdf$}\par
+    \vspace{1.3em}
+    $endif$
     {\axiommono\fontsize{7}{9}\selectfont
       {\color{axiomaccent}\S}\hspace{0.7em}%
       \MakeUppercase{$if(kicker)$$kicker$$else$WORKING PAPER$endif$}\par}
@@ -22,6 +26,8 @@
     $if(by-affiliation)$
     {\sffamily\small
       $for(by-affiliation)$$it.name$$sep$\enspace\textperiodcentered\enspace{}$endfor$\par}
+    $elseif(wordmark)$
+    $-- The wordmark already names the theme affiliation.
     $elseif(axiom-theme.affiliation)$
     {\sffamily\small $axiom-theme.affiliation$\par}
     $endif$

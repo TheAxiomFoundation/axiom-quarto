@@ -183,7 +183,7 @@ fi
 
 # The base extension's HTML format shares the partials. Its PDF format is not
 # rendered here: it already fails on main, because Quarto resolves its
-# axiom-font-dir to an extension path that pandoc escapes.
+# axiom-font-dir to an extension path (#3).
 case_document base-html <<'QMD'
 ---
 title: "Base HTML"

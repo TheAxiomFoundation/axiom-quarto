@@ -5,4 +5,11 @@ axiom-theme:
   accent-hover-css: "#b45309"
   accent-hover-tex: B45309
   affiliation: Axiom Foundation
-  wordmark: assets/axiom-wordmark.svg
+  # Quarto copies format-resources beside the document by basename, so the
+  # partials name the copies, not the assets/ paths.
+  # Source: axiom-brand@8a738e0 svg/wordmark/full/axiom-full-w350-gradient.svg,
+  # the full lockup axiom.org serves as /logos/axiom-foundation.svg.
+  wordmark-svg: axiom-wordmark.svg
+  # Built from the SVG by scripts/build-wordmark-pdf.sh.
+  wordmark-pdf: axiom-wordmark.pdf
+  wordmark-alt: Axiom Foundation

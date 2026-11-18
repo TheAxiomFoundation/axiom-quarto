@@ -3,6 +3,15 @@
   \begingroup
   \setlength{\parindent}{0pt}%
   \begin{flushleft}
+    $if(wordmark)$
+    % The kit file pads its first glyph 26.5 of its 363 units (19.88bp at
+    % rsvg-convert's 0.75bp per unit) from the left edge; trimming that keeps
+    % the glyph flush with the kicker.
+    \BeginAccSupp{method=pdfstringdef,ActualText={$axiom-theme.wordmark-alt$}}%
+    \includegraphics[height=0.45in,trim=19.88bp 0 0 0,alt={$axiom-theme.wordmark-alt$}]{$axiom-theme.wordmark-pdf$}%
+    \EndAccSupp{}\par
+    \vspace{1.3em}
+    $endif$
     {\axiommono\fontsize{7}{9}\selectfont
       {\color{axiomaccent}\S}\hspace{0.7em}%
       \MakeUppercase{$if(kicker)$$kicker$$else$WORKING PAPER$endif$}\par}
@@ -22,6 +31,8 @@
     $if(by-affiliation)$
     {\sffamily\small
       $for(by-affiliation)$$it.name$$sep$\enspace\textperiodcentered\enspace{}$endfor$\par}
+    $elseif(wordmark)$
+    $-- The wordmark already names the theme affiliation.
     $elseif(axiom-theme.affiliation)$
     {\sffamily\small $axiom-theme.affiliation$\par}
     $endif$

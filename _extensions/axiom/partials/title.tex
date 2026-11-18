@@ -4,9 +4,12 @@
   \setlength{\parindent}{0pt}%
   \begin{flushleft}
     $if(wordmark)$
-    % The kit file pads its first glyph 19.88bp (26.5 of its 363 units) from
-    % the left edge; trimming that keeps the glyph flush with the kicker.
-    \includegraphics[height=0.45in,trim=19.88bp 0 0 0,alt={$axiom-theme.wordmark-alt$}]{$axiom-theme.wordmark-pdf$}\par
+    % The kit file pads its first glyph 26.5 of its 363 units (19.88bp at
+    % rsvg-convert's 0.75bp per unit) from the left edge; trimming that keeps
+    % the glyph flush with the kicker.
+    \BeginAccSupp{method=pdfstringdef,ActualText={$axiom-theme.wordmark-alt$}}%
+    \includegraphics[height=0.45in,trim=19.88bp 0 0 0,alt={$axiom-theme.wordmark-alt$}]{$axiom-theme.wordmark-pdf$}%
+    \EndAccSupp{}\par
     \vspace{1.3em}
     $endif$
     {\axiommono\fontsize{7}{9}\selectfont

@@ -7,6 +7,14 @@
 % Quarto's template loads graphicx only under its `graphics` variable; the
 % title block's wordmark needs it regardless.
 \usepackage{graphicx}
+% graphicx gained its alt key in v1.2d (2021-09); define it as a no-op on older
+% releases so the wordmark's alt text never stops a render.
+\makeatletter
+\@ifundefined{KV@Gin@alt}{\define@key{Gin}{alt}{}}{}
+\makeatother
+% The alt key does nothing without PDF tagging, so ActualText gives the
+% wordmark its text equivalent for copying, search and assistive tools.
+\usepackage{accsupp}
 
 \setmainfont[
   Path={$axiom-font-dir$/geist/},

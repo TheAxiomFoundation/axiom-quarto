@@ -27,9 +27,10 @@ Metadata:
 See `example/paper.qmd` for a minimal two-format paper.
 
 Rendering copies the format's resources beside the document: `fonts/` and
-`axiom-wordmark.pdf` for PDF, `axiom-wordmark.svg` for HTML. Projects with an
-output directory also copy the SVG beside each page. Add these copies to
-`.gitignore`.
+`axiom-wordmark.pdf` for PDF, `axiom-wordmark.svg` for HTML. A file of the same
+name beside the document is overwritten. Add the copies beside source documents
+to `.gitignore`. Projects with an output directory also copy the SVG beside
+each rendered page there; publish it with the page.
 
 ## Development
 
@@ -44,4 +45,6 @@ rsvg-convert, pdftoppm and ImageMagick; CI runs it on every pull request.
 it with a newer kit file rather than editing it. The PDF wordmark is a vector
 conversion of that SVG, committed so rendering needs no conversion step.
 After changing the SVG, run `scripts/build-wordmark-pdf.sh` and commit both
-files.
+files, update the kit blob id in `scripts/check.sh`, and re-measure the left
+padding that `partials/title.tex` trims and `axiom.scss` offsets so the first
+glyph stays flush with the kicker.

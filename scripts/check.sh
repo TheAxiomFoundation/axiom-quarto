@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Validate the wordmark assets, then render test documents in every paper
-# format with and without the wordmark and check each title block. Needs
-# quarto, xelatex, xmllint, rsvg-convert, pdftoppm and ImageMagick's compare.
+# format with and without the wordmark and check each title block. Needs git,
+# quarto, xelatex, xmllint, rsvg-convert, poppler's pdfinfo and pdftoppm, and
+# ImageMagick's identify and compare.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,18 +22,30 @@ check() {
   if "$@"; then ok "$description"; else not_ok "$description"; fi
 }
 has() { grep -qF -- "$2" "$1"; }
-lacks() { ! grep -qF -- "$2" "$1"; }
+has_line() { grep -qE -- "$2" "$1"; }
+# A missing file fails instead of passing as one that lacks everything.
+lacks() {
+  [[ -r "$1" ]] || {
+    printf '# missing %s\n' "$1"
+    return 1
+  }
+  ! grep -qF -- "$2" "$1"
+}
 
 # The SVG assets must parse as XML; rsvg-convert and browsers reject
 # malformed markup.
+svgs=0
 while IFS= read -r svg; do
+  svgs=$((svgs + 1))
   check "$svg parses as XML" xmllint --noout "$root/$svg"
 done < <(git -C "$root" ls-files '*.svg')
+check "the repository tracks SVG assets to validate" test "$svgs" -gt 0
 
 # The wordmark is the brand kit's file, unchanged: axiom-brand@8a738e0
 # svg/wordmark/full/axiom-full-w350-gradient.svg, which axiom.org also serves
 # as /logos/axiom-foundation.svg. Replacing it with a newer kit file means
-# updating this blob id.
+# updating this blob id, rebuilding the PDF, and re-measuring the left padding
+# that partials/title.tex trims and axiom.scss offsets.
 kit_blob=721f9e8233cfd069f9e81623da743e9931aff6f3
 check "axiom-wordmark.svg is the brand kit's full lockup" \
   test "$(git hash-object "$assets/axiom-wordmark.svg")" = "$kit_blob"
@@ -48,8 +61,7 @@ check "axiom-wordmark.svg is the brand kit's full lockup" \
 pdf_matches_svg() {
   local shipped="$assets/axiom-wordmark.pdf" shipped_size fresh_size
   local width height differing
-  rsvg-convert --format=pdf --output="$work/fresh.pdf" \
-    "$assets/axiom-wordmark.svg" || return 1
+  "$root/scripts/build-wordmark-pdf.sh" "$work/fresh.pdf" >/dev/null || return 1
   shipped_size="$(pdfinfo "$shipped" | sed -n 's/^Page size: *//p')"
   fresh_size="$(pdfinfo "$work/fresh.pdf" | sed -n 's/^Page size: *//p')"
   if [[ -z "$shipped_size" || "$shipped_size" != "$fresh_size" ]]; then
@@ -85,8 +97,11 @@ render() {
 
 wordmark_tex=']{axiom-wordmark.pdf}'
 wordmark_html='<img class="axiom-wordmark" src="axiom-wordmark.svg" alt="Axiom Foundation">'
-# The fallback byline; author affiliations print on their own line instead.
+# The fallback byline; author affiliations print on their own line instead,
+# which only the second pattern matches.
 theme_affiliation_tex='\sffamily\small Axiom Foundation\par}'
+author_affiliation_tex='^[[:space:]]*Axiom Foundation\\par\}$'
+actual_text_tex='ActualText={Axiom Foundation}'
 # The wordmark's alt text also reads "Axiom Foundation", so match the span.
 affiliation_html='<span class="affiliation">Axiom Foundation</span>'
 
@@ -96,10 +111,13 @@ cp "$root/example/paper.qmd" "$project/example/"
 if render example; then
   d="$project/example"
   check "example PDF includes the wordmark" has "$d/paper.tex" "$wordmark_tex"
+  check "example PDF gives the wordmark its text" has "$d/paper.tex" "$actual_text_tex"
+  check "example PDF keeps the author affiliation" has_line "$d/paper.tex" "$author_affiliation_tex"
   check "example PDF exists" test -s "$d/paper.pdf"
   check "example HTML includes the wordmark" has "$d/paper.html" "$wordmark_html"
   check "example HTML wordmark file sits beside the page" test -s "$d/axiom-wordmark.svg"
   check "example HTML keeps the author affiliation" has "$d/paper.html" "$affiliation_html"
+  check "example HTML keeps the affiliations block" has "$d/paper.html" 'class="axiom-affiliations"'
 fi
 
 case_document() {
@@ -121,9 +139,11 @@ QMD
 if render no-affiliation; then
   d="$project/no-affiliation"
   check "no-affiliation PDF includes the wordmark" has "$d/paper.tex" "$wordmark_tex"
+  check "no-affiliation PDF gives the wordmark its text" has "$d/paper.tex" "$actual_text_tex"
   check "no-affiliation PDF omits the theme byline" lacks "$d/paper.tex" "$theme_affiliation_tex"
   check "no-affiliation HTML includes the wordmark" has "$d/paper.html" "$wordmark_html"
-  check "no-affiliation HTML omits the theme byline" lacks "$d/paper.html" "axiom-affiliations"
+  check "no-affiliation HTML omits the theme byline" lacks "$d/paper.html" "$affiliation_html"
+  check "no-affiliation HTML has no empty affiliations block" lacks "$d/paper.html" "axiom-affiliations"
 fi
 
 # `wordmark: false` removes it from both formats and restores the byline.
@@ -161,7 +181,28 @@ QMD
 if render pdf-opt-out; then
   d="$project/pdf-opt-out"
   check "pdf-opt-out PDF omits the wordmark" lacks "$d/paper.tex" "axiom-wordmark"
+  check "pdf-opt-out PDF prints the theme byline" has "$d/paper.tex" "$theme_affiliation_tex"
   check "pdf-opt-out HTML includes the wordmark" has "$d/paper.html" "$wordmark_html"
+  check "pdf-opt-out HTML omits the theme byline" lacks "$d/paper.html" "$affiliation_html"
+fi
+
+case_document html-opt-out <<'QMD'
+---
+title: "HTML opt out"
+author: Ada Example
+format:
+  axiom-paper-pdf: default
+  axiom-paper-html:
+    wordmark: false
+---
+Body.
+QMD
+if render html-opt-out; then
+  d="$project/html-opt-out"
+  check "html-opt-out PDF includes the wordmark" has "$d/paper.tex" "$wordmark_tex"
+  check "html-opt-out PDF omits the theme byline" lacks "$d/paper.tex" "$theme_affiliation_tex"
+  check "html-opt-out HTML omits the wordmark" lacks "$d/paper.html" "axiom-wordmark"
+  check "html-opt-out HTML prints the theme byline" has "$d/paper.html" "$affiliation_html"
 fi
 
 # Self-contained HTML embeds the SVG instead of linking it.
